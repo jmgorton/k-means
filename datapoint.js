@@ -13,13 +13,5 @@ function Datapoint(x, y) {
 		rect(this.x, this.y, 2, 2);
 	}
 
-	this.getX = function() {
-		return x;
-	}
-
-	this.getY = function() {
-		return y;
-	}
-
 }
 

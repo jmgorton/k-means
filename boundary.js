@@ -12,4 +12,5 @@ function Boundary(xmin, xmax, ymin, ymax) {
         line(xmax, ymin, xmax, ymax);
         line(xmin, ymin, xmin, ymax);
     }
+
 }
