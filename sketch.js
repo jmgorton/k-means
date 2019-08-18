@@ -1,7 +1,7 @@
 var datapoints = [];
 var bounds = [];
 
-var k = 3;
+var k = 1;
 
 var x;
 var y;
@@ -12,13 +12,20 @@ function setup() {
 	createCanvas(1440, 840);
 
 	for (var i = 0; i < DP_COUNT; i++) {
-		datapoints[i] = new Datapoint(random(width), random(height));
+		datapoints[i] = new Datapoint(
+			random(width),
+			random(height)
+		);
 	}
 	for (var i = 0; i < k; i++) {
-		bounds[i] = new Boundary();
+		bounds[i] = new Boundary(
+			// random(width),
+			// random(width),
+			// random(height),
+			// random(height)
+			20, 200, 40, 600
+		);
 	}
-	
-	return;
 }
 
 function draw() {
@@ -30,8 +37,6 @@ function draw() {
 	for (var i = 0; i < k; i++) {
 		bounds[i].show();
 	}
-
-	return;
 }
 
 function keyPressed() {
@@ -40,7 +45,10 @@ function keyPressed() {
 	}
 	else if (key === 'n') {
 		for (var i = 0; i < DP_COUNT; i++) {
-			datapoints[i] = new Datapoint(random(width), random(height));
+			datapoints[i] = new Datapoint(
+				random(width),
+				random(height)
+			);
 		}
 	}
 }
