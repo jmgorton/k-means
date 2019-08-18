@@ -3,6 +3,7 @@ var CONCENTRATION_FACTOR = 1;
 var K = 2;
 
 var datapoints = [];
+var dpCategory = [];
 var bounds = [];
 
 var trueMeans = [];
@@ -14,46 +15,19 @@ var y;
 function setup() {
 	createCanvas(1440, 840);
 
-	for (var i = 0; i < K; i++) {
-		trueMeans[i] = new Datapoint(
-			random(width - 200) + 100,
-			random(height - 200) + 100
-		);
-		calcMeans[i] = new Datapoint(
-			random(width),
-			random(height)
-		);
-	}
-	for (var i = 0; i < DP_COUNT; i++) {
-		// var x_i = random(K);
-		// var y_i = random(K);
-		var x_i = i % K;
-		var y_i = i % K;
+	pickTrueMeans();
+	pickCalcMeans();
 
-		// var x = trueMeans[x_i].x;
-		// var y = trueMeans[y_i].y;
-		var x = trueMeans[x_i].x + random(-99, 100) + random(-99, 100);
-		var y = trueMeans[y_i].y + random(-99, 100) + random(-99, 100);
+	placeDatapoints();
 
-		// for (var i = 0; i < 10; i++) {
-		// 	x = x + random(-39, 40);
-		// 	y = y + random(-19, 20);
-		// }
-		
-		datapoints[i] = new Datapoint(x, y);
-	}
 	// if you don't include this in the setup
 	// the boundaries never get shown or updated for some reason
 	// and the whole keyPressed() function breaks i guess
 	for (var i = 0; i < K; i++) {
-		bounds[i] = new Boundary(
-			// random(width),
-			// random(width),
-			// random(height),
-			// random(height)
-			0, 0, 0, 0
-		);
+		bounds[i] = new Boundary(0, 0, 0, 0);
 	}
+
+	noLoop();
 }
 
 function draw() {
@@ -146,19 +120,54 @@ function keyPressed() {
 		}
 	}
 	else if (key === 'n') {
-		for (var i = 0; i < DP_COUNT; i++) {
-			datapoints[i] = new Datapoint(
-				random(width),
-				random(height)
-			);
-		}
+		pickTrueMeans();
+		pickCalcMeans();
+		
+		placeDatapoints();
+
 		for (var i = 0; i < K; i++) {
-			bounds[i] = new Boundary(
-				random(width),
-				random(width),
-				random(height),
-				random(height)
-			);
+			bounds[i] = new Boundary(0, 0, 0, 0);
 		}
+	}
+
+	redraw();
+}
+
+function placeDatapoints() {
+	for (var i = 0; i < DP_COUNT; i++) {
+		// var x_i = random(K);
+		// var y_i = random(K);
+		var x_i = i % K;
+		var y_i = i % K;
+
+		// var x = trueMeans[x_i].x;
+		// var y = trueMeans[y_i].y;
+		var x = trueMeans[x_i].x + random(-99, 100) + random(-99, 100);
+		var y = trueMeans[y_i].y + random(-99, 100) + random(-99, 100);
+
+		// for (var i = 0; i < 10; i++) {
+		// 	x = x + random(-39, 40);
+		// 	y = y + random(-19, 20);
+		// }
+		
+		datapoints[i] = new Datapoint(x, y);
+	}
+}
+
+function pickTrueMeans() {
+	for (var i = 0; i < K; i++) {
+		trueMeans[i] = new Datapoint(
+			random(width - 200) + 100,
+			random(height - 200) + 100
+		);
+	}
+}
+
+function pickCalcMeans() {
+	for (var i = 0; i < K; i++) {
+		calcMeans[i] = new Datapoint(
+			random(width - 200) + 100,
+			random(height - 200) + 100
+		);
 	}
 }
