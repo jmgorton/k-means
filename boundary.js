@@ -7,7 +7,7 @@ function Boundary(xmin, xmax, ymin, ymax) {
     this.show = function() {
         stroke(216, 219, 39);
         strokeWeight(2);
-        line(this.xmin, this.ymin, this.xmax, this.ymin);
+        line(xmin, ymin, xmax, ymin);
         line(xmin, ymax, xmax, ymax);
         line(xmax, ymin, xmax, ymax);
         line(xmin, ymin, xmin, ymax);
