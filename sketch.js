@@ -42,15 +42,18 @@ function setup() {
 		
 		datapoints[i] = new Datapoint(x, y);
 	}
-	// for (var i = 0; i < K; i++) {
-	// 	bounds[i] = new Boundary(
-	// 		// random(width),
-	// 		// random(width),
-	// 		// random(height),
-	// 		// random(height)
-	// 		0, 0, 0, 0
-	// 	);
-	// }
+	// if you don't include this in the setup
+	// the boundaries never get shown or updated for some reason
+	// and the whole keyPressed() function breaks i guess
+	for (var i = 0; i < K; i++) {
+		bounds[i] = new Boundary(
+			// random(width),
+			// random(width),
+			// random(height),
+			// random(height)
+			0, 0, 0, 0
+		);
+	}
 }
 
 function draw() {
