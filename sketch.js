@@ -42,16 +42,16 @@ function draw() {
 }
 
 function keyPressed() {
+	// update boundaries
 	if (key === ' ') {
-		// update boundaries
-		// var xmin = width;
-		// var ymin = height;
-		// var xmax = 0, ymax = 0;
 		var updated = [];
 
+		// initialize
 		for (var i = 0; i < K; i++) {
 			updated[i] = 0;
 		}
+
+		// cycle through datapoints, finding which calcMean the point is closest to
 		for (var i = 0; i < DP_COUNT; i++) {
 			var closestMean = 0;
 			var distToClosestMean = dist(
@@ -73,56 +73,18 @@ function keyPressed() {
 					distToClosestMean = newDist;
 				}
 			}
-			// it has now been determined which calcMean this datapoint is closest to
-			if (updated[closestMean] == 0) {
-				// this is the first datapoint falling into this cluster
-				bounds[closestMean] = new Boundary(
-					datapoints[i].x - 1,
-					datapoints[i].x + 1,
-					datapoints[i].y - 1,
-					datapoints[i].y + 1
-				);
-				updated[closestMean] = 1;
-			}
-			else {
-				// this cluster already contains at least one other datapoint
-				if (datapoints[i].x < bounds[closestMean].xmin) {
-					bounds[closestMean] = new Boundary(
-						datapoints[i].x,
-						bounds[closestMean].xmax,
-						bounds[closestMean].ymin,
-						bounds[closestMean].ymax
-					);
-				} else if (datapoints[i].x > bounds[closestMean].xmax) {
-					bounds[closestMean] = new Boundary(
-						bounds[closestMean].xmin,
-						datapoints[i].x,
-						bounds[closestMean].ymin,
-						bounds[closestMean].ymax
-					);
-				}
-				if (datapoints[i].y < bounds[closestMean].ymin) {
-					bounds[closestMean] = new Boundary(
-						bounds[closestMean].xmin,
-						bounds[closestMean].xmax,
-						datapoints[i].y,
-						bounds[closestMean].ymax
-					);
-				} else if (datapoints[i].y > bounds[closestMean].ymax) {
-					bounds[closestMean] = new Boundary(
-						bounds[closestMean].xmin,
-						bounds[closestMean].xmax,
-						bounds[closestMean].ymin,
-						datapoints[i].y
-					);
-				}
-			}
+
+			dpCategory[i] = closestMean;
 		}
+
+		// redraw the boundaries with the new categorizations
+		redrawBounds();
 	}
+	// reset the screen
 	else if (key === 'n') {
 		pickTrueMeans();
 		pickCalcMeans();
-		
+
 		placeDatapoints();
 
 		for (var i = 0; i < K; i++) {
@@ -130,7 +92,10 @@ function keyPressed() {
 		}
 	}
 
+	// calls the draw function
 	redraw();
+	// seems like this does the same thing
+	// draw();
 }
 
 function placeDatapoints() {
@@ -142,8 +107,8 @@ function placeDatapoints() {
 
 		// var x = trueMeans[x_i].x;
 		// var y = trueMeans[y_i].y;
-		var x = trueMeans[x_i].x + random(-99, 100) + random(-99, 100);
-		var y = trueMeans[y_i].y + random(-99, 100) + random(-99, 100);
+		var x = trueMeans[x_i].x + random(-49, 50) + random(-49, 50) + random(-49, 50);
+		var y = trueMeans[y_i].y + random(-99, 100) + random(-99, 100) + random(-99, 100);
 
 		// for (var i = 0; i < 10; i++) {
 		// 	x = x + random(-39, 40);
@@ -154,11 +119,44 @@ function placeDatapoints() {
 	}
 }
 
+function redrawBounds() {
+	for (var i = 0; i < K; i++) {
+		var xmax = 0, ymax = 0;
+		var xmin = width;
+		var ymin = height;
+
+		var xsum = 0, ysum = 0;
+		var numDPHere = 0;
+
+		for (var j = 0; j < DP_COUNT; j++) {
+			if (dpCategory[j] == i) {
+				xsum += datapoints[j].x;
+				ysum += datapoints[j].y;
+				numDPHere++;
+
+				if (datapoints[j].x > xmax) xmax = datapoints[j].x;
+				if (datapoints[j].x < xmin) xmin = datapoints[j].x;
+				if (datapoints[j].y > ymax) ymax = datapoints[j].y;
+				if (datapoints[j].y < ymin) ymin = datapoints[j].y;
+			}
+		}
+
+		if (numDPHere == 0) {
+			bounds[i] = new Boundary(0, 0, 0, 0);
+			calcMeans[i] = new Datapoint(random(width), random(height));
+		} else {
+			bounds[i] = new Boundary(xmin, xmax, ymin, ymax);
+			calcMeans[i] = new Datapoint(xsum / numDPHere, ysum / numDPHere);
+		}
+	}
+
+}
+
 function pickTrueMeans() {
 	for (var i = 0; i < K; i++) {
 		trueMeans[i] = new Datapoint(
-			random(width - 200) + 100,
-			random(height - 200) + 100
+			random(width - 400) + 200,
+			random(height - 400) + 200
 		);
 	}
 }
