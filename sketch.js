@@ -9,6 +9,8 @@ var bounds = [];
 var trueMeans = [];
 var calcMeans = [];
 
+// look at p5.js API for ideas on how to expand and improve this
+
 function setup() {
 	createCanvas(1440, 840);
 

@@ -1,0 +1,3 @@
+a basic clustering project, grouping together like data points.
+to use, simply open the index.html file in your browser.
+possible area to expand: select clustering/calculated means without knowing K ahead of time?
