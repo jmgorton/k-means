@@ -1,6 +1,6 @@
-var DP_COUNT = 150;
-var CONCENTRATION_FACTOR = 1;
-var K = 2;
+var DP_COUNT = 150;				/* how many datapoints to include */
+var CONCENTRATION_FACTOR = 1;	/* 1 is a standard value. higher means more spread out. */
+var K = 3;						/* this is how many clusters are calculated. */
 
 var datapoints = [];
 var dpCategory = [];
@@ -8,9 +8,6 @@ var bounds = [];
 
 var trueMeans = [];
 var calcMeans = [];
-
-var x;
-var y;
 
 function setup() {
 	createCanvas(1440, 840);
@@ -107,13 +104,13 @@ function placeDatapoints() {
 
 		// var x = trueMeans[x_i].x;
 		// var y = trueMeans[y_i].y;
-		var x = trueMeans[x_i].x + random(-49, 50) + random(-49, 50) + random(-49, 50);
-		var y = trueMeans[y_i].y + random(-99, 100) + random(-99, 100) + random(-99, 100);
+		var x = trueMeans[x_i].x;
+		var y = trueMeans[y_i].y;
 
-		// for (var i = 0; i < 10; i++) {
-		// 	x = x + random(-39, 40);
-		// 	y = y + random(-19, 20);
-		// }
+		for (var j = 0; j < 10 * CONCENTRATION_FACTOR; j++) {
+			x = x + random(-39, 40);
+			y = y + random(-19, 20);
+		}
 		
 		datapoints[i] = new Datapoint(x, y);
 	}
@@ -155,13 +152,14 @@ function redrawBounds() {
 function pickTrueMeans() {
 	for (var i = 0; i < K; i++) {
 		trueMeans[i] = new Datapoint(
-			random(width - 400) + 200,
+			random(width - 200) + 100,
 			random(height - 400) + 200
 		);
 	}
 }
 
 function pickCalcMeans() {
+	// maybe pick the calcMeans more strategically, to avoid two clusters being grouped together
 	for (var i = 0; i < K; i++) {
 		calcMeans[i] = new Datapoint(
 			random(width - 200) + 100,
