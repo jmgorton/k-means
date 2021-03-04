@@ -1,33 +1,40 @@
-var DP_COUNT = 150;				/* how many datapoints to include */
-var CONCENTRATION_FACTOR = 1;	/* 1 is a standard value. higher means more spread out. */
-var NUM_GROUPS = 3;						/* this is how many clusters are calculated. */
-var NUM_BOUNDS = NUM_GROUPS;
+var DP_COUNT = 150;				/** how many datapoints to include */
+var CONCENTRATION_FACTOR = 1;	/** 1 is a standard value. higher means more spread out. */
+var NUM_GROUPS = 3;						/** this is how many clusters are generated. */
+var NUM_BOUNDS = NUM_GROUPS;		/** how many clusters we're attempting to sort by */
 
 var datapoints = [];
 var dpCategory = [];
+
 var bounds = [];
+var groupings = [];
 
 var trueMeans = [];
 var calcMeans = [];
+
+var showBoundaries = true;
 
 // look at p5.js API for ideas on how to expand and improve this
 
 function setup() {
 	createCanvas(1440, 840);
 
-	pickTrueMeans();
-	// pickCalcMeans();
+	initFields();
 
+	pickTrueMeans();
 	placeDatapoints();
 
-	// if you don't include this in the setup
-	// the boundaries never get shown or updated for some reason
-	// and the whole keyPressed() function breaks i guess
+	noLoop();
+}
+
+function initFields() {
+	for (var i = 0; i < NUM_GROUPS; i++) {
+		groupings[i] = new Grouping(i);
+	}
+
 	for (var i = 0; i < NUM_BOUNDS; i++) {
 		bounds[i] = new Boundary(0, 0, 0, 0);
 	}
-
-	noLoop();
 }
 
 function draw() {
@@ -36,34 +43,33 @@ function draw() {
 	for (var i = 0; i < DP_COUNT; i++) {
 		datapoints[i].show();
 	}
-	for (var i = 0; i < NUM_BOUNDS; i++) {
-		bounds[i].show();
+	if (showBoundaries) {
+		for (var i = 0; i < NUM_BOUNDS; i++) {
+			bounds[i].show();
+		}
 	}
 }
 
 function keyPressed() {
 	// update boundaries
 	if (key === ' ' || (key <= '9' && key > '0')) {
-		var updated = [];
+
 		let numBoundaries = parseInt(key);
 		if (numBoundaries != null && !Number.isNaN(numBoundaries)) {
 			NUM_BOUNDS = numBoundaries;
 		}
 		if (calcMeans.length != NUM_BOUNDS) {
-			console.log("generating calcMeans... NUM_BOUNDS=" + NUM_BOUNDS);
 			pickCalcMeans();
-
-			for (var i = 0; i < calcMeans.length; i++) {
-				console.log("calcMeans[" + i + "]=" + JSON.stringify(calcMeans[i]));
-			}
 		}
 
-		// initialize
+		// clear out datapoints currently in 
 		for (var i = 0; i < NUM_BOUNDS; i++) {
-			updated[i] = 0;
+			if (bounds[i] == null) {
+				bounds[i] = new Boundary(0, 0, 0, 0);
+			}
+			bounds[i].datapoints = [];
 		}
 
-		var averageDistToMean = [];
 		// cycle through datapoints, finding which calcMean the point is closest to
 		for (var i = 0; i < DP_COUNT; i++) {
 			var closestMean = 0;
@@ -88,7 +94,8 @@ function keyPressed() {
 			}
 
 			dpCategory[i] = closestMean;
-
+			datapoints[i].setBoundary(closestMean);
+			bounds[closestMean].addDatapoint(datapoints[i]);
 		}
 
 		// update the boundaries with the new categorizations
@@ -96,14 +103,14 @@ function keyPressed() {
 	}
 	// reset the screen
 	else if (key === 'n') {
+		initFields();
+
 		pickTrueMeans();
-		// pickCalcMeans();
-
 		placeDatapoints();
-
-		for (var i = 0; i < NUM_BOUNDS; i++) {
-			bounds[i] = new Boundary(0, 0, 0, 0);
-		}
+	}
+	// toggle boundaries
+	else if (key === 'b') {
+		this.showBoundaries = !this.showBoundaries;
 	}
 
 	// calls the draw function
@@ -127,12 +134,17 @@ function placeDatapoints() {
 		}
 		
 		datapoints[i] = new Datapoint(x, y);
-		// datapoints[i].setGrouping(grouping);
+		datapoints[i].setGrouping(grouping);
+		groupings[grouping].addDatapoint(datapoints[i]);
 	}
 }
 
 function updateBounds() {
 	for (var i = 0; i < NUM_BOUNDS; i++) {
+		// if (bounds[i].stable) {
+		// 	continue;
+		// }
+
 		var xmax = 0, ymax = 0;
 		var xmin = width;
 		var ymin = height;
@@ -158,29 +170,58 @@ function updateBounds() {
 			calcMeans[i] = new Datapoint(random(width), random(height));
 		} else {
 			var newBoundary = new Boundary(xmin, xmax, ymin, ymax);
-			if (bounds[i] != null && bounds[i].equals(newBoundary)) {
+			if (/** !bounds[i].stable && */ bounds[i] != null && bounds[i].equals(newBoundary)) {
 				var numDPWithinBoundary = 0;
 				var sumDistFromNearestBoundary = 0;
 				var sumDistFromMean = 0;
 				for (var j = 0; j < DP_COUNT; j++) {
 					if (dpCategory[j] == i) {
-						var minDistToBound = Math.min(xmax - datapoints[i].x, datapoints[i].x - xmin, ymax - datapoints[i].y, datapoints[i].y - ymin);
-						var distToMean = dist(datapoints[i].x, datapoints[i].y, xmax + xmin / 2, ymax + ymin / 2);
+						var minDistToBound = Math.min(xmax - datapoints[j].x, datapoints[j].x - xmin, ymax - datapoints[j].y, datapoints[j].y - ymin);
+						var distToMean = Math.abs(dist(datapoints[j].x, datapoints[j].y, (xmax + xmin) / 2, (ymax + ymin) / 2));
 						sumDistFromNearestBoundary += minDistToBound;
 						sumDistFromMean += distToMean;
 						numDPWithinBoundary++;
 					}
 				}
-				console.log("boundary stabilized...");
-				console.log("boundary[" + i + "] (xmin of " + xmin + ") has:");
+
+				bounds[i].averageDistFromDatapointToCenter = sumDistFromMean / bounds[i].datapoints.length;
+				bounds[i].averageDistFromDatapointToNearestBoundary = sumDistFromNearestBoundary / bounds[i].datapoints.length;
+
+				console.log("boundary[" + i + "] stabilized...");
+				console.log("(" + Math.round(xmin) + ", " + Math.round(ymin) + "), " +
+				"(" + Math.round(xmax) + ", " + Math.round(ymax) + ")");
 				console.log("\taverage dist from dp to nearest boundary: " + sumDistFromNearestBoundary / numDPWithinBoundary);
 				console.log("\taverage dist from dp to center of boundary: " + sumDistFromMean / numDPWithinBoundary);
+
+				console.log("\n\tnum dps within boundary: " + numDPWithinBoundary + ", num dps from this bounds element: " + bounds[i].datapoints.length);
+
+				for (var j = 0; j < bounds[i].datapoints.length; j++) {
+					var minDistToBound = Math.min(xmax - bounds[i].datapoints[j].x, bounds[i].datapoints[j].x - xmin, ymax - bounds[i].datapoints[j].y, bounds[i].datapoints[j].y - ymin);
+					var distToMean = Math.abs(dist(bounds[i].datapoints[j].x, bounds[i].datapoints[j].y, (xmax + xmin) / 2, (ymax + ymin) / 2));
+					sumDistFromNearestBoundary -= minDistToBound;
+					sumDistFromMean -= distToMean;
+				}
+
+				console.log("should both be 0... " + Math.round(sumDistFromMean) + ", " + Math.round(sumDistFromNearestBoundary));
+
+				bounds[i].stable = true;
 			} else {
-				// bounds[i] = new Boundary(xmin, xmax, ymin, ymax);
 				bounds[i] = newBoundary;
 				calcMeans[i] = new Datapoint(xsum / numDPHere, ysum / numDPHere);
 			}
 		}
+	}
+
+	var allBoundsStable = true;
+	for (var i = 0; i < NUM_BOUNDS; i++) {
+		if (!bounds[i].stable) {
+			allBoundsStable = false;
+			break;
+		}
+	}
+
+	if (allBoundsStable) {
+
 	}
 
 }
@@ -199,6 +240,7 @@ function pickTrueMeans() {
  */
 function pickCalcMeans() {
 	// maybe pick the calcMeans more strategically, to avoid two clusters being grouped together
+	calcMeans = [];
 	for (var i = 0; i < NUM_BOUNDS; i++) {
 		calcMeans[i] = getNewRandomDatapoint();
 	}

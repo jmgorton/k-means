@@ -3,6 +3,7 @@ function Datapoint(x, y) {
 	this.y = y;
 
 	this.grouping = null;
+	this.boundary = null;
 
 
 	// if you instead type this.show() = ...
@@ -17,6 +18,10 @@ function Datapoint(x, y) {
 
 	this.setGrouping = function(newGrouping) {
 		this.grouping = newGrouping;
+	}
+
+	this.setBoundary = function(newBoundary) {
+		this.boundary = newBoundary;
 	}
 
 }

@@ -5,6 +5,12 @@ function Boundary(xmin, xmax, ymin, ymax) {
     this.ymax = ymax > ymin ? ymax : ymin;
 
     this.grouping = null;
+    this.datapoints = [];
+
+    this.averageDistFromDatapointToCenter = null;
+    this.averageDistFromDatapointToNearestBoundary = null;
+
+    this.stable = false;
 
     this.show = function() {
         stroke(216, 219, 39);
@@ -15,12 +21,7 @@ function Boundary(xmin, xmax, ymin, ymax) {
         line(xmin, ymin, xmin, ymax);
     }
 
-    this.setGrouping = function(newGrouping) {
-        this.grouping = newGrouping;
-    }
-
     this.equals = function(otherBoundary) {
-        console.log("comparing boundaries...");
         if (otherBoundary != null
             && otherBoundary.xmax == this.xmax
             && otherBoundary.xmin == this.xmin
@@ -30,5 +31,13 @@ function Boundary(xmin, xmax, ymin, ymax) {
         } else {
             return false;
         }
+    }
+
+    this.setGrouping = function(newGrouping) {
+        this.grouping = newGrouping;
+    }
+
+    this.addDatapoint = function(newDatapoint) {
+        this.datapoints.push(newDatapoint);
     }
 }
